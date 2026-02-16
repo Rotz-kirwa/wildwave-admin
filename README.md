@@ -57,11 +57,6 @@ Or manually:
 vercel --prod
 ```
 
-## 🔐 Login Credentials
-
-- **Email**: admin@wildwave.com
-- **Password**: admin123
-
 ## 📱 Pages
 
 - `/` - Dashboard Overview
