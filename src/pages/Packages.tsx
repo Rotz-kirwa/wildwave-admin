@@ -8,6 +8,7 @@ export default function Packages() {
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [showAddModal, setShowAddModal] = useState(false)
+  const [selectedCountry, setSelectedCountry] = useState<string>('All')
   const [editForm, setEditForm] = useState({ 
     name: '', 
     duration: '', 
@@ -125,9 +126,21 @@ export default function Packages() {
     return <div className="p-6 text-center">Loading packages...</div>
   }
 
+  const countries = ['All', 'Kenya', 'Tanzania', 'Uganda', 'Rwanda']
+  const filteredPackages = selectedCountry === 'All' 
+    ? packages 
+    : packages.filter(pkg => pkg.category === selectedCountry)
+
+  const packagesByCountry = {
+    Kenya: packages.filter(p => p.category === 'Kenya'),
+    Tanzania: packages.filter(p => p.category === 'Tanzania'),
+    Uganda: packages.filter(p => p.category === 'Uganda'),
+    Rwanda: packages.filter(p => p.category === 'Rwanda')
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-display font-bold text-gray-900 dark:text-safari-cream">Tour Packages</h1>
           <p className="text-gray-600 dark:text-safari-cream/60 mt-1">Manage safari packages and destinations</p>
@@ -141,9 +154,48 @@ export default function Packages() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {packages.map((pkg) => (
-          <div key={pkg.id} className="bg-white dark:bg-safari-charcoal rounded-2xl overflow-hidden card-shadow-lg border border-gray-100 dark:border-safari-brown/20 hover:shadow-xl transition-all">
+      {/* Country Filter Tabs */}
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+        {countries.map((country) => (
+          <button
+            key={country}
+            onClick={() => setSelectedCountry(country)}
+            className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
+              selectedCountry === country
+                ? 'bg-safari-gold text-white'
+                : 'bg-white dark:bg-safari-charcoal text-gray-700 dark:text-safari-cream border border-gray-200 dark:border-gray-700 hover:border-safari-gold'
+            }`}
+          >
+            {country} {country !== 'All' && `(${packagesByCountry[country as keyof typeof packagesByCountry]?.length || 0})`}
+          </button>
+        ))}
+      </div>
+
+      {selectedCountry === 'All' ? (
+        // Show grouped by country
+        <div className="space-y-8">
+          {Object.entries(packagesByCountry).map(([country, countryPackages]) => (
+            countryPackages.length > 0 && (
+              <div key={country}>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-safari-cream mb-4 flex items-center gap-2">
+                  {country}
+                  <span className="text-sm font-normal text-gray-500 dark:text-gray-400">({countryPackages.length} destinations)</span>
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {countryPackages.map((pkg) => renderPackageCard(pkg))}
+                </div>
+              </div>
+            )
+          ))}
+        </div>
+      ) : (
+        // Show filtered by selected country
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredPackages.map((pkg) => renderPackageCard(pkg))}
+        </div>
+      )}
+  const renderPackageCard = (pkg: any) => (
+    <div key={pkg.id} className="bg-white dark:bg-safari-charcoal rounded-2xl overflow-hidden card-shadow-lg border border-gray-100 dark:border-safari-brown/20 hover:shadow-xl transition-all">
             <div className="relative h-48 overflow-hidden group">
               <img src={editingId === pkg.id && imagePreview ? imagePreview : pkg.image_url} alt={pkg.name} className="w-full h-full object-cover" />
               {editingId === pkg.id && (
@@ -280,8 +332,10 @@ export default function Packages() {
               </div>
             </div>
           </div>
-        ))}
+        </div>
       </div>
+    </div>
+  )
 
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
